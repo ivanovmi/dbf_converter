@@ -18,8 +18,8 @@ TYPE_MAP = {'F': 'FLOAT',
             'L': 'BOOLEAN',
             'I': 'INTEGER',
             'C': 'TEXT',
-            'N': 'REAL',
-            'M': 'TEXT',
+            'N': 'INT',
+            'M': 'VARCHAR',
             'D': 'DATE',
             'T': 'DATETIME',
             '0': 'INTEGER'}
@@ -54,7 +54,7 @@ def convert_to_sql(file_name):
     types[field.name] = "{}{}".format(TYPE_MAP[field.type], length)
 
   query = ", ".join('{} {}'.format(k, v) for k, v in types.items())
-  sql_query = "USE {}; CREATE TABLE data (id INT NOT NULL AUTO_INCREMENT, {}, PRIMARY KEY(id)) ENGINE = MYISAM;".format(file_name, query)
+  sql_query = "USE {}; CREATE TABLE IF NOT EXISTS data (id INT NOT NULL AUTO_INCREMENT, {}, PRIMARY KEY(id)) ENGINE = MYISAM;".format(file_name, query)
   cur.execute(sql_query)
 
   count = 0
