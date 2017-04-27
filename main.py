@@ -65,46 +65,16 @@ def init_db(db_connection):
                  "q_zsl mediumint(6) unsigned NOT NULL,"
                  "k_age tinyint(1) unsigned NOT NULL,"
                  "vid_tarif tinyint(1) unsigned NOT NULL,"
-                 "enabled tinyint(1) unsigned NOT NULL,"
                  "PRIMARY KEY (id))"
                  " ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;")
     db_connection.execute(sql_query)
 
 
-def check_diff(db_connection, ppac, types):
-    sql_query = ('SELECT id,ppac,type FROM omcsmo.rp '
-                 'WHERE ppac="{}" AND type={}'.format(ppac, types))
-    db_connection.execute(sql_query)
-    result = db_connection.fetchall()
-    return result
-
-
-def to_sql(db, db_connection, override):
+def to_sql(db, db_connection):
     count = 0
-    type_ = ppac = None
     for rec in db:
-        if override:
-            if rec["PPAC"] != ppac or rec["TYPE"] != type_:
-                check = True
-                ppac = rec["PPAC"]
-                type_ = rec["TYPE"]
-            else:
-                check = False
-        else:
-            check = False
-
         keys = ', '.join(list(rec.keys()))
         values = ', '.join("'{}'".format(str(x)) for x in list(rec.values()))
-        diff = check_diff(db_connection, rec["PPAC"], rec["TYPE"])
-
-        keys += ', enabled'
-        values += ', 1'
-
-        if check and diff != []:
-            sql_query = ("UPDATE omcsmo.rp"
-                         " SET enabled=0 WHERE ppac='{}'"
-                         " AND type='{}' AND enabled=1".format(ppac, type_))
-            db_connection.execute(sql_query)
 
         sql_query = "INSERT INTO omcsmo.rp ({}) VALUES ({})".format(keys,
                                                                     values)
@@ -122,8 +92,6 @@ parser.add_argument('--db-port', dest='db_port', default=3306,
                     type=int, help='Порт для доступа к MySQL серверу')
 parser.add_argument('--init', action='store_true',
                     help='Use this option for db initialization')
-parser.add_argument('--override', action='store_true',
-                    help='Включить перезапись строк таблицы')
 parser.add_argument('--verbose', action='store_true',
                     help='Increase verbosity')
 args = parser.parse_args()
@@ -151,5 +119,4 @@ if __name__ == "__main__":
                              ignore_missing_memofile=False)
             bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
             filename = db_path.split('.')[0]
-            override = args.override
-            to_sql(db, connection, override)
+            to_sql(db, connection)
