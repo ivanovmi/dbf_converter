@@ -2,7 +2,7 @@ import argparse
 import getpass
 import logging
 import sys
-
+import yaml
 
 import _mysql_exceptions
 import coloredlogs
@@ -70,14 +70,16 @@ def init_db(db_connection):
     db_connection.execute(sql_query)
 
 
-def to_sql(db, db_connection):
+def to_sql(db, db_connection, db_name, table_name):
     count = 0
     for rec in db:
         keys = ', '.join(list(rec.keys()))
         values = ', '.join("'{}'".format(str(x)) for x in list(rec.values()))
 
-        sql_query = "INSERT INTO omcsmo.rp ({}) VALUES ({})".format(keys,
-                                                                    values)
+        sql_query = "INSERT INTO {}.{} ({}) VALUES ({})".format(db_name,
+                                                               table_name,
+                                                               keys,
+                                                               values)
         db_connection.execute(sql_query)
         bar.update(count)
         count += 1
@@ -94,6 +96,8 @@ parser.add_argument('--init', action='store_true',
                     help='Use this option for db initialization')
 parser.add_argument('--verbose', action='store_true',
                     help='Increase verbosity')
+parser.add_argument('--config', dest='config', required=True,
+                    help='Path to config')
 args = parser.parse_args()
 
 log = logging.getLogger(__name__)
@@ -107,6 +111,47 @@ coloredlogs.install(level=level)
 
 if __name__ == "__main__":
     connection = auth_db(args.db_host, args.db_port)
+
+    with open(args.config, 'r') as f:
+        cfg = yaml.load(f)
+        for db in cfg['db']:
+            log.info('Initializing {db_name} db'.format(db_name=db['name']))
+            sql_query = (
+                "CREATE DATABASE IF NOT EXISTS {} DEFAULT CHARACTER SET"
+                " utf8 DEFAULT COLLATE utf8_general_ci".format(db['name']))
+            connection.execute(sql_query)
+            for table in db['tables']:
+                sql_query = "USE {db_name}; ".format(db_name=db['name'])
+                log.info('Initializing {table_name} in'
+                         ' {db_name}'.format(table_name=table['name'],
+                                             db_name=db['name']))
+                sql_query += "CREATE TABLE IF NOT EXISTS {table_name} (".format(table_name=table['name'])
+                for column in table['columns']:
+                    sql_query += "{column_name} " \
+                                 "{column_type} " \
+                                 "{sign} " \
+                                 "{nullable} " \
+                                 "{auto_increment},". \
+                        format(column_name=column['name'],
+                               column_type=column['type'],
+                               sign="unsigned" if column.get('unsigned', None) is True else "",
+                               nullable="NOT NULL" if column[None] is False else "NULL",
+                               auto_increment="AUTO_INCREMENT" if column.get('auto_increment', None) is True else "")
+                sql_query += "PRIMARY KEY ({})) ".format(table['primary_key'])
+                sql_query += "ENGINE={engine}" \
+                             " DEFAULT CHARSET={charset} " \
+                             "AUTO_INCREMENT={inc};". \
+                    format(engine=table.get('engine', 'MyISAM'),
+                           charset=table.get('charset', 'utf8'),
+                           inc=table.get('auto_increment', 0))
+                connection.execute(sql_query)
+                for _file in table['files']:
+                    db_file = dbfread.DBF(_file, ignorecase=True,
+                                          ignore_missing_memofile=False)
+                    bar = progressbar.ProgressBar(
+                        max_value=progressbar.UnknownLength)
+                    to_sql(db_file, connection, db['name'], table['name'])
+    """
     if args.init:
         log.info('Начало инициализации базы данных')
         init_db(connection)
@@ -120,3 +165,4 @@ if __name__ == "__main__":
             bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
             filename = db_path.split('.')[0]
             to_sql(db, connection)
+    """

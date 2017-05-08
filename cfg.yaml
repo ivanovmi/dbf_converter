@@ -1,0 +1,126 @@
+db:
+  - name: omcsmo
+    tables:
+      - name: rp
+        primary_key: id
+        engine: MyISAM
+        charset: utf8
+        auto_increment: 1
+        files:
+          - valkmnt.dbf
+          - 1st.dbf
+          - 2nd.dbf
+        columns:
+          - name: id
+            type: int(11)
+            unsigned: true
+            null: false
+            auto_increment: true
+          - name: cd_lpu
+            type: mediumint(7)
+            unsigned: true
+            null: false
+          - name: ppac
+            type: date
+            null: false
+          - name: cd_sect
+            type: smallint(3)
+            unsigned: true
+            null: false
+          - name: n_s
+            type: mediumint(5)
+            unsigned: true
+            null: false
+          - name: nstr_grn
+            type: mediumint(5)
+            unsigned: true
+            null: false
+          - name: dspc
+            type: date
+            null: false
+          - name: dfpc
+            type: date
+            null: false
+          - name: drpc
+            type: date
+            null: false
+          - name: fam
+            type: char(40)
+            null: false
+          - name: nam
+            type: char(40)
+            null: false
+          - name: snam
+            type: char(40)
+            null: false
+          - name: sex
+            type: char(1)
+            null: false
+          - name: cd_mkb
+            type: char(6)
+            null: false
+          - name: q_haus
+            type: mediumint(6)
+            unsigned: true
+            null: false
+          - name: q_recp
+            type: mediumint(6)
+            unsigned: true
+            null: false
+          - name: vsl
+            type: tinyint(2)
+            unsigned: true
+            null: false
+          - name: isx
+            type: char(65)
+            null: false
+          - name: sn_pol
+            type: char(16)
+            null: false
+          - name: nk
+            type: char(50)
+            null: false
+          - name: vp
+            type: tinyint(1)
+            unsigned: true
+            null: false
+          - name: vidpom
+            type: smallint(4)
+            unsigned: true
+            null: false
+          - name: kmnt
+            type: smallint(4)
+            null: false
+          - name: kmnt2
+            type: varchar(500)
+            null: false
+          - name: type
+            type: tinyint(2)
+            unsigned: true
+            null: false
+          - name: cd_spc
+            type: mediumint(6)
+            unsigned: true
+            null: false
+          - name: cna
+            type: decimal(10,2)
+            null: false
+          - name: sum_u
+            type: decimal(10,2)
+            null: false
+          - name: q_pos
+            type: mediumint(6)
+            unsigned: true
+            null: false
+          - name: q_zsl
+            type: mediumint(6)
+            unsigned: true
+            null: false
+          - name: k_age
+            type: tinyint(1)
+            unsigned: true
+            null: false
+          - name: vid_tarif
+            type: tinyint(1)
+            unsigned: true
+            null: false
